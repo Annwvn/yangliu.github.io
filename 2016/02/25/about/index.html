@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/yangliu.github.io/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/yangliu.github.io/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/yangliu.github.io/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/yangliu.github.io/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/yangliu.github.io/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/yangliu.github.io/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/yangliu.github.io/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="简单来说：有三个步骤1observer  递归所有的属性 获取的属性添加到 Dep数组中 1compuile  编译模板 判断相对应的节点变化，进行判断是元素节点还是文本节点。 1wather  相当于订阅者,监听相对应的节点变化，原型上 有自身的update 来上代码12345678910111213141516171819202122232425262728293031323334353637">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vue双向绑定">
+<meta property="og:url" content="https://annwvn.github.io/yangliu.github.io/2016/02/25/about/index.html">
+<meta property="og:site_name" content="快来看这里~">
+<meta property="og:description" content="简单来说：有三个步骤1observer  递归所有的属性 获取的属性添加到 Dep数组中 1compuile  编译模板 判断相对应的节点变化，进行判断是元素节点还是文本节点。 1wather  相当于订阅者,监听相对应的节点变化，原型上 有自身的update 来上代码12345678910111213141516171819202122232425262728293031323334353637">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-02-26T10:27:48.661Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="vue双向绑定">
+<meta name="twitter:description" content="简单来说：有三个步骤1observer  递归所有的属性 获取的属性添加到 Dep数组中 1compuile  编译模板 判断相对应的节点变化，进行判断是元素节点还是文本节点。 1wather  相当于订阅者,监听相对应的节点变化，原型上 有自身的update 来上代码12345678910111213141516171819202122232425262728293031323334353637">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/yangliu.github.io/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://annwvn.github.io/yangliu.github.io/2016/02/25/about/">
+
+
+
+
+
+  <title>vue双向绑定 | 快来看这里~</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/yangliu.github.io/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">快来看这里~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/yangliu.github.io/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/yangliu.github.io/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://annwvn.github.io/yangliu.github.io/yangliu.github.io/2016/02/25/about/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Annwvn">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/yangliu.github.io/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="快来看这里~">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">vue双向绑定</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-02-25T20:35:33+08:00">
+                2016-02-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="简单来说：有三个步骤"><a href="#简单来说：有三个步骤" class="headerlink" title="简单来说：有三个步骤"></a>简单来说：有三个步骤</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">observer  递归所有的属性 获取的属性添加到 Dep数组中</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compuile  编译模板 判断相对应的节点变化，进行判断是元素节点还是文本节点。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wather  相当于订阅者,监听相对应的节点变化，原型上 有自身的update</span><br></pre></td></tr></table></figure>
+<p>来上代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=&quot;en&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">  &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">  &lt;title&gt;forvue&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;div id=&quot;app&quot;&gt;</span><br><span class="line">        &lt;input type=&quot;text&quot; v-model=&quot;text&quot;&gt; </span><br><span class="line">        &lt;br&gt;&#123;&#123; text &#125;&#125; &lt;br&gt;</span><br><span class="line">        &lt;input type=&quot;text&quot; v-model=&quot;texts&quot;&gt; </span><br><span class="line">        &lt;br&gt;&#123;&#123; texts &#125;&#125; &lt;br&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">        </span><br><span class="line">    &lt;script&gt;</span><br><span class="line">    &lt;!-- 递归来获取所有的属性 --&gt;</span><br><span class="line">        function observe(obj, vm) &#123;</span><br><span class="line">            // console.log(vm,&apos;vm&apos;); </span><br><span class="line">            // Vue &#123;data: &#123;…&#125;&#125; ----vm</span><br><span class="line">            //---vm展开 以下---</span><br><span class="line">            // data: &#123;text: &quot;hello world&quot;&#125;</span><br><span class="line">            // text: &quot;hello world&quot;</span><br><span class="line">            // get text: ƒ ()</span><br><span class="line">            // set text: ƒ (newVal)</span><br><span class="line">            // __proto__: Object</span><br><span class="line"></span><br><span class="line">            Object.keys(obj).forEach(function (key) &#123;</span><br><span class="line">                defineReactive(vm, key, obj[key]);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        //获取和监听 触发事件时的值 数据劫持  Object.defineProperty()</span><br><span class="line">        function defineReactive(obj, key, val) &#123;</span><br><span class="line">            var dep = new Dep();</span><br><span class="line">            // 响应式的数据绑定</span><br><span class="line">            Object.defineProperty(obj, key, &#123;</span><br><span class="line">                get: function () &#123;</span><br><span class="line">                    // 添加订阅者watcher到主题对象Dep  【Dep是一个数组】</span><br><span class="line">                    if (Dep.target) &#123;</span><br><span class="line">                        dep.addSub(Dep.target); //dep挂载的addSub方法 为了添加watcher</span><br><span class="line">                    &#125;</span><br><span class="line">                    return val;</span><br><span class="line">                &#125;,</span><br><span class="line">                //相当于发布者</span><br><span class="line">                set: function (newVal) &#123;</span><br><span class="line">                    if (newVal === val) &#123;</span><br><span class="line">                        return; </span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        val = newVal;</span><br><span class="line">                        // 作为发布者发出通知</span><br><span class="line">                        dep.notify()                        </span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        function nodeToFragment(node, vm) &#123;</span><br><span class="line">            var flag = document.createDocumentFragment() </span><br><span class="line">            &lt;!-- document.createDocumentFragment()方法创建一个新空白的DocumentFragment对象。</span><br><span class="line">            DocumentFragments是DOM节点。它们不是主DOM树的一部分。通常的用例是创建文档片段，将元素附加到文档片段，然后将文档片段附加到DOM树。在DOM树中，文档片段被其所有的子元素代替。 --&gt;</span><br><span class="line">            var child;</span><br><span class="line">            //此处while 循环 先判断 是否满足条件，满足就执行循环体内的语句,</span><br><span class="line">            执行完毕后再回来判断条件是否满足，如此无限重复,直到条件不满足时，执行while循环后边的语句</span><br><span class="line">            while (child = node.firstChild) &#123;</span><br><span class="line">                //判断是否是文本节点 2</span><br><span class="line">                compile(child, vm);</span><br><span class="line">                flag.appendChild(child) // 将子节点劫持到文档片段中</span><br><span class="line">            &#125;</span><br><span class="line">            return flag;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        //compuile 模板编译</span><br><span class="line">        function compile(node, vm) &#123;</span><br><span class="line">            var reg = /\&#123;\&#123;(.*)\&#125;\&#125;/;</span><br><span class="line"></span><br><span class="line">            // 节点类型为元素  元素节点 1  属性节点 2</span><br><span class="line">            if (node.nodeType === 1) &#123;</span><br><span class="line">                var attr = node.attributes;</span><br><span class="line">                // 解析属性</span><br><span class="line">                for (var i = 0; i &lt; attr.length; i++) &#123;</span><br><span class="line">                    if (attr[i].nodeName == &apos;v-model&apos;) &#123;</span><br><span class="line">                        var name = attr[i].nodeValue; // 获取v-model绑属性名</span><br><span class="line">                        //触发dom二级事件  input</span><br><span class="line">                        node.addEventListener(&apos;input&apos;, function (e) &#123;</span><br><span class="line">                            // 给相应的data属性赋值，进而触发属性的set方法</span><br><span class="line">                            vm[name] = e.target.value;</span><br><span class="line">                        &#125;)</span><br><span class="line">                        node.value = vm[name]; // 将data的值赋值给该node</span><br><span class="line">                        node.removeAttribute(&apos;v-model&apos;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // 节点类型为text</span><br><span class="line">            if (none.nodeType === 3) &#123;</span><br><span class="line">                if (reg.test(node.nodeValue)) &#123;</span><br><span class="line">                    var name = RegExp.$1; // 获取匹配到的字符串</span><br><span class="line">                    name = name.trim();</span><br><span class="line">                    // node.nodeValue = vm[name]; // 将data的值赋值给该node</span><br><span class="line">                    new Watcher(vm, node, name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        //订阅者 有自身的update()</span><br><span class="line">        function Watcher(vm, node, name) &#123;</span><br><span class="line">            Dep.target = this;</span><br><span class="line">            this.name = name;</span><br><span class="line">            this.node = node;</span><br><span class="line">            this.vm = vm;</span><br><span class="line">            this.update();</span><br><span class="line">            Dep.target = null;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Watcher.prototype = &#123;</span><br><span class="line">            update: function () &#123;</span><br><span class="line">                this.get();</span><br><span class="line">                this.node.nodeValue = this.value;</span><br><span class="line">            &#125;,</span><br><span class="line"></span><br><span class="line">            // 获取data中的属性值</span><br><span class="line">            get: function () &#123;</span><br><span class="line">                this.value = this.vm[this.name]; // 触发相应属性的get</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        //数组 放的是整个 watcher 所包含的所有属性</span><br><span class="line">        function Dep () &#123;</span><br><span class="line">            this.subs = [];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Dep.prototype = &#123;</span><br><span class="line">            addSub: function (sub) &#123;</span><br><span class="line">                this.subs.push(sub);</span><br><span class="line">            &#125;,</span><br><span class="line">            //发布</span><br><span class="line">            notify: function () &#123;</span><br><span class="line">                this.subs.forEach(function (sub) &#123;</span><br><span class="line">                    sub.update();</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        function Vue(options) &#123;</span><br><span class="line">            this.data = options.data;</span><br><span class="line">            var data = this.data;</span><br><span class="line">            observe(data, this);</span><br><span class="line">            var id = options.el;</span><br><span class="line">            var dom = nodeToFragment(document.getElementById(id), this);</span><br><span class="line">            </span><br><span class="line">            // 编译完成后，将dom返回到app中。</span><br><span class="line">            document.getElementById(id).appendChild(dom);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        var vm  = new Vue(&#123;</span><br><span class="line">            el: &apos;app&apos;,</span><br><span class="line">            data: &#123;</span><br><span class="line">                text: &apos;hello world&apos;,</span><br><span class="line">                texts: &apos;加油&apos;,</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/yangliu.github.io/2014/04/18/跨域/" rel="next" title="跨域">
+                <i class="fa fa-chevron-left"></i> 跨域
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/yangliu.github.io/2019/03/21/Generator/" rel="prev" title="Generator(生成器) 异步编程解决方案">
+                Generator(生成器) 异步编程解决方案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Annwvn</p>
+              <p class="site-description motion-element" itemprop="description">爱学习的姑娘.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/yangliu.github.io/archives/">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单来说：有三个步骤"><span class="nav-number">1.</span> <span class="nav-text">简单来说：有三个步骤</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Annwvn</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/yangliu.github.io/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/yangliu.github.io/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/yangliu.github.io/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/yangliu.github.io/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/yangliu.github.io/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/yangliu.github.io/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/yangliu.github.io/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/yangliu.github.io/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/yangliu.github.io/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/yangliu.github.io/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/yangliu.github.io/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
